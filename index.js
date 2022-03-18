@@ -1,7 +1,15 @@
 const express = require('express');
 const bodyParser = require('body-parser');
-const { readAFile, generateRandomString } = require('./services');
-const { validateEmail, validatePassword } = require('./middlewares');
+const { readAFile, writeAFile, generateRandomString } = require('./services');
+const {
+  validateEmail,
+  validatePassword,
+  authenticationToken,
+  validateName,
+  validateAge,
+  validateTalkWatchedAt,
+  validateTalkRate,
+} = require('./middlewares');
 
 const app = express();
 app.use(bodyParser.json());
@@ -41,6 +49,33 @@ app.post('/login', validateEmail, validatePassword, (_req, res) => {
 
   return res.status(200).json({ token });
 });
+
+app.use(authenticationToken);
+
+app.post(
+  '/talker',
+  validateName,
+  validateAge,
+  validateTalkWatchedAt,
+  validateTalkRate,
+  async (req, res) => {
+    const { name, age, talk } = req.body;
+    const data = await readAFile('talker.json');
+
+    const newData = {
+      name,
+      age,
+      id: data.length + 1,
+      talk,
+    };
+
+    data.push(newData);
+
+    await writeAFile('talker.json', data);
+
+    return res.status(201).json(newData);
+  },
+);
 
 app.listen(PORT, () => {
   console.log('Online');
