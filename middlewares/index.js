@@ -100,7 +100,7 @@ function validateTalkRate(req, res, next) {
   const { talk } = req.body;
   const rateRegex = /^[1-5]$/;
   
-  if (!talk || !talk.rate || talk.rate === '') {
+  if (!talk || talk.rate === undefined || talk.rate === '') {
     return res.status(400).json({
       message: 'O campo "talk" é obrigatório e "watchedAt" e "rate" não podem ser vazios',
     });
