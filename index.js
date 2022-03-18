@@ -11,6 +11,8 @@ const {
   validateTalkRate,
 } = require('./middlewares');
 
+const TALKER_FILENAME = 'talker.json';
+
 const app = express();
 app.use(bodyParser.json());
 
@@ -23,7 +25,7 @@ app.get('/', (_request, response) => {
 });
 
 app.get('/talker', async (_req, res) => {
-  const data = await readAFile('talker.json');
+  const data = await readAFile(TALKER_FILENAME);
 
   if (data) {
     return res.status(200).json(data);
@@ -32,7 +34,7 @@ app.get('/talker', async (_req, res) => {
 
 app.get('/talker/:id', async (req, res) => {
   const { id } = req.params;
-  const data = await readAFile('talker.json');
+  const data = await readAFile(TALKER_FILENAME);
   const getTalker = data.find((talker) => talker.id === +id);
 
   if (getTalker) {
@@ -60,7 +62,7 @@ app.post(
   validateTalkRate,
   async (req, res) => {
     const { name, age, talk } = req.body;
-    const data = await readAFile('talker.json');
+    const data = await readAFile(TALKER_FILENAME);
 
     const newData = {
       name,
@@ -71,9 +73,36 @@ app.post(
 
     data.push(newData);
 
-    await writeAFile('talker.json', data);
+    await writeAFile(TALKER_FILENAME, data);
 
     return res.status(201).json(newData);
+  },
+);
+
+app.put(
+  '/talker/:id',
+  validateName,
+  validateAge,
+  validateTalkWatchedAt,
+  validateTalkRate,
+  async (req, res) => {
+    const { name, age, talk } = req.body;
+    const { id } = req.params;
+    const data = await readAFile(TALKER_FILENAME);
+    const getTalkerIndex = data.findIndex((talker) => talker.id === +id);
+
+    const newData = {
+      name,
+      age,
+      id: +id,
+      talk,
+    };
+
+    data[getTalkerIndex] = newData;
+
+    await writeAFile(TALKER_FILENAME, data);
+
+    return res.status(200).json(newData);
   },
 );
 
