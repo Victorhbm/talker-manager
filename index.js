@@ -106,6 +106,15 @@ app.put(
   },
 );
 
+app.delete('/talker/:id', async (req, res) => {
+  const { id } = req.params;
+  const data = await readAFile(TALKER_FILENAME);
+  const newData = data.filter((talker) => talker.id !== +id);
+
+  await writeAFile(TALKER_FILENAME, newData);
+  return res.status(204).send();
+});
+
 app.listen(PORT, () => {
   console.log('Online');
 });
